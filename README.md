@@ -1,138 +1,135 @@
-# 2020 Pig Game (Vanilla JS)
+# The Pig Game
 
-A two-player browser game implementing the classic “Pig” dice rules with a 1-die mode and a 2-dice variation.
+Two-player browser game implementing the classic “Pig” dice rules in **Vanilla JS**, with a **1-die** mode and a **2-dice** variation.
 
-This project is intentionally “no framework” to highlight fundamentals: DOM-driven UI, predictable state updates, input validation, and clean UX feedback.
-
-## Quick Pitch (Recruiter / Hiring Manager)
-
-If you’re scanning for evidence of practical front-end skill, this project demonstrates:
-
-- **Product thinking**: clear rules, discoverable controls, immediate feedback, and minimal friction to start playing.
-- **UI/UX implementation**: a centered game board, strong hierarchy for scores, and state-based styling for “active” and “winner”.
-- **Engineering fundamentals**: event-driven code, state management, defensive input handling, and reliable UI synchronization.
-- **Professional polish**: consistent typography, iconography, and asset usage (background + dice sprites).
+No build step, no framework—just HTML/CSS/JS and static assets.
 
 ## Demo
 
 - Public demo: https://2020-thepiggame.fcjamison.com/
 
-## Gameplay
+## Gameplay Rules
 
 ### 1 Die (Base Rules)
 
 - Players alternate turns.
-- **Roll dice** accumulates points into the **Current** (round) score.
-- Rolling a **1** loses the round score and ends the turn.
-- **Hold** banks the Current score into the player’s **Global** score and passes the turn.
+- **Roll dice** adds to your **Current** (round) score.
+- Rolling a **1** loses your Current score and ends your turn.
+- **Hold** banks Current into your **Global** score and ends your turn.
 - First to reach the **winning score** wins.
 
 ### 2 Dice (Variation)
 
 When **2 Dice** is selected:
 
-- Rolling a **1** on either die ends the turn and loses round points.
+- Rolling a **1** on either die loses Current and ends your turn.
 - Rolling **double 1s** (snake eyes) resets the active player’s **Global** score to 0 and ends the turn.
 
-## Controls & UX Details
+## Controls
 
-- **New game** resets state and UI (scores, names, active highlight, dice visibility).
-- **Roll dice** shows dice images only when needed (reduces visual noise).
-- **Hold** uses a **validated winning score**:
-  - If the “Final score” input is blank/invalid, the game defaults to **100**.
-- **Mode selector (1 Die / 2 Dice)** restarts the game to avoid mixed-rule ambiguity.
-
-## Design & Front-End Implementation Highlights
-
-### Layout & Visual Hierarchy
-
-- **Single-screen experience**: everything fits within a centered `.wrapper` with consistent spacing.
-- **Two-column player panels** communicate turn-taking and competition at a glance.
-- **Strong score hierarchy**: large global scores, smaller current score modules.
-
-### State-Based Styling
-
-- **Active player indicator** is purely a CSS class toggle (`.active`), including an accent dot via a `::after` pseudo-element.
-- **Winner state** uses a `.winner` class for immediate, high-salience feedback.
-
-### Assets & Branding Consistency
-
-- Background image with an overlay gradient improves text readability.
-- Dice images are swapped via `src` changes (sprite-style asset set), keeping the DOM stable.
-- Ionicons + Google Fonts are loaded via CDN for a clean, modern UI without build tooling.
-
-## Engineering / Code Highlights (Developer Notes)
-
-### State Model
-
-Core game state is kept in a small set of variables:
-
-- `scores`: global totals for both players
-- `roundScore`: current turn accumulator
-- `activePlayer`: index (0 or 1)
-- `gamePlaying`: guard flag to disable input after win
-- `gameVersion`: `"1"` or `"2"` based on the selector
-
-This separation keeps UI rendering straightforward: UI text always reflects these state variables.
-
-### Event-Driven Flow
-
-- UI is driven by click events for **Roll**, **Hold**, and **New game**, plus a change event for **mode selection**.
-- “Stop-the-world” logic is handled by `gamePlaying` so the UI can remain interactive-looking without allowing invalid state transitions.
-
-### DOM Update Strategy
-
-- Uses stable element IDs (`#score-0`, `#current-1`, etc.) for deterministic updates.
-- Switches turns by toggling classes and resetting only the turn-scoped values.
-- Dice visibility is controlled via `style.display`, keeping the layout consistent.
-
-### Input Validation
-
-Winning score is parsed using `parseInt` and validated with `isNaN` / range checks.
-If invalid, the game falls back to a safe default (100), preventing `NaN` propagation.
+- **New game**: resets all state and UI.
+- **Roll dice**: rolls 1 or 2 dice depending on mode, and updates Current.
+- **Hold**: adds Current to Global, then switches players.
+- **Final score** input: winning score target.
+  - Blank/invalid/< 1 defaults to **100**.
+- **Mode selector (1 Die / 2 Dice)**: changing it re-initializes the game to avoid mixed-rule ambiguity.
 
 ## Tech Stack
 
-- **HTML**: structure and semantics
-- **CSS**: layout, typography, state styling
-- **Vanilla JavaScript**: rules engine + DOM updates
-- **Assets**: background + dice images
+- HTML (static)
+- CSS (layout + state styling)
+- JavaScript (rules engine + DOM updates)
 
 ## Project Structure
 
 ```
-2020PigGame/
-  index.html
-  css/
-    style.css
-  js/
-    app.js
-  images/
-    back.jpg
-    dice-1.png ... dice-6.png
+.
+├─ index.html
+├─ css/
+│  └─ style.css
+├─ js/
+│  └─ app.js
+└─ images/
+   ├─ back.jpg
+   ├─ dice-1.png
+   ├─ ...
+   └─ dice-6.png
 ```
 
 ## Run Locally
 
-### Option A: Open directly
+This is a static site—any static server works.
+
+### Option A: Open the file directly
 
 Open `index.html` in your browser.
 
-### Option B: Serve from a local web server
+### Option B: Serve with a local HTTP server (recommended)
 
-If you prefer a local server (recommended for consistency), run one of these from the project folder:
+From the project folder:
 
 - Python: `python -m http.server 5500`
-- Node (if installed): `npx http-server -p 5500`
+- Node: `npx http-server -p 5500`
 
-Then visit: http://localhost:5500/
+Then visit `http://localhost:5500/`.
 
-## Customization Ideas
+### Option C: VS Code “Live Server”
 
-- Add a “**Reset winning score**” button and/or persist the setting in `localStorage`.
-- Add keyboard controls (R = roll, H = hold, N = new).
-- Add a small “rules” modal for first-time users.
-- Add animations (dice shake, score transitions) while keeping state updates deterministic.
+If you use the Live Server extension, right-click `index.html` → “Open with Live Server”.
+
+### Option D: Use `thepiggame.localhost`
+
+This workspace includes a VS Code task that opens `http://thepiggame.localhost/` in Chrome.
+
+Notes:
+
+- `*.localhost` commonly resolves to `127.0.0.1` in modern environments. If it doesn’t on your machine, add a hosts entry mapping it to localhost.
+- You still need a local server (Apache/Nginx/other) configured to serve this folder at that hostname.
+
+## Developer Notes (How the Code Works)
+
+All gameplay logic lives in `js/app.js`.
+
+### State Model
+
+The game keeps a small, explicit state:
+
+- `scores`: global totals `[p0, p1]`
+- `roundScore`: the current turn accumulator
+- `activePlayer`: `0` or `1`
+- `gamePlaying`: disables actions after someone wins
+- `gameVersion`: `'1'` or `'2'` from the `<select class="version">`
+
+### Core Functions
+
+- `initializeGame()`
+  - Resets variables, scores, winner/active classes, and hides dice.
+  - Reads the current mode via `getGameVersion()`.
+- `switchPlayers()`
+  - Toggles `activePlayer`, resets `roundScore`, clears both Current fields, and hides dice.
+- `getGameVersion()`
+  - Returns the `<select>` value (`'1'` or `'2'`).
+
+### Event Flow
+
+- Mode change (`.version`): re-initializes game.
+- Roll (`.btn-roll`):
+  - Always rolls die 1.
+  - Rolls die 2 only in 2-dice mode.
+  - Updates Current unless a 1 was rolled, in which case it switches players.
+  - Snake eyes (double 1s) sets the active player’s Global score to 0 and switches players.
+- Hold (`.btn-hold`):
+  - Adds Current to Global.
+  - Reads winning score from `.final-score` (defaults to 100).
+  - Declares winner or switches players.
+
+### 1-Die Mode Implementation Detail
+
+In 1-die mode, the code keeps `dice2` at `0`, so the scoring line `roundScore += dice1 + dice2` effectively adds only die 1.
+
+## Deployment
+
+Because this is static, you can deploy it to any static host (GitHub Pages, Netlify, S3, etc.). Make sure the `images/` folder is included.
 
 ## Credits
 
@@ -142,4 +139,4 @@ Then visit: http://localhost:5500/
 
 ## License
 
-No license specified. Add an MIT license if you plan to distribute this publicly.
+No license specified. Add a license (for example, MIT) if you plan to distribute this publicly.
