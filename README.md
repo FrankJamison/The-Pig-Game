@@ -6,7 +6,7 @@ No build step, no framework—just HTML/CSS/JS and static assets.
 
 ## Demo
 
-- Public demo: https://2020-thepiggame.fcjamison.com/
+- Live preview: https://piggame.fcjamison.com/
 
 ## Gameplay Rules
 
