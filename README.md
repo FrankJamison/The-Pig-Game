@@ -1,142 +1,165 @@
-# The Pig Game
+# The Pig Game (Vanilla JS)
 
-Two-player browser game implementing the classic “Pig” dice rules in **Vanilla JS**, with a **1-die** mode and a **2-dice** variation.
+Two-player browser implementation of the classic “Pig” dice game.
 
-No build step, no framework—just HTML/CSS/JS and static assets.
+- No build step, no framework
+- Static HTML/CSS/JS + images
+- Supports **1 die** (base rules) and **2 dice** (variation)
 
-## Demo
+Demo: https://piggame.fcjamison.com/
 
-- Live preview: https://piggame.fcjamison.com/
+## Quick Start (Local)
 
-## Gameplay Rules
+This is a static site. You can run it in any modern browser.
 
-### 1 Die (Base Rules)
+### Option A: open the file
 
-- Players alternate turns.
-- **Roll dice** adds to your **Current** (round) score.
-- Rolling a **1** loses your Current score and ends your turn.
-- **Hold** banks Current into your **Global** score and ends your turn.
-- First to reach the **winning score** wins.
+- Open `index.html` directly.
 
-### 2 Dice (Variation)
+This works for gameplay, but note that fonts/icons are loaded via CDN and may be blocked by some browser privacy settings when using `file://`.
 
-When **2 Dice** is selected:
+### Option B: run a local server (recommended)
 
-- Rolling a **1** on either die loses Current and ends your turn.
-- Rolling **double 1s** (snake eyes) resets the active player’s **Global** score to 0 and ends the turn.
-
-## Controls
-
-- **New game**: resets all state and UI.
-- **Roll dice**: rolls 1 or 2 dice depending on mode, and updates Current.
-- **Hold**: adds Current to Global, then switches players.
-- **Final score** input: winning score target.
-  - Blank/invalid/< 1 defaults to **100**.
-- **Mode selector (1 Die / 2 Dice)**: changing it re-initializes the game to avoid mixed-rule ambiguity.
-
-## Tech Stack
-
-- HTML (static)
-- CSS (layout + state styling)
-- JavaScript (rules engine + DOM updates)
-
-## Project Structure
-
-```
-.
-├─ index.html
-├─ css/
-│  └─ style.css
-├─ js/
-│  └─ app.js
-└─ images/
-   ├─ back.jpg
-   ├─ dice-1.png
-   ├─ ...
-   └─ dice-6.png
-```
-
-## Run Locally
-
-This is a static site—any static server works.
-
-### Option A: Open the file directly
-
-Open `index.html` in your browser.
-
-### Option B: Serve with a local HTTP server (recommended)
-
-From the project folder:
+From the project root:
 
 - Python: `python -m http.server 5500`
 - Node: `npx http-server -p 5500`
 
-Then visit `http://localhost:5500/`.
+Then open `http://localhost:5500/`.
 
-### Option C: VS Code “Live Server”
+### Option C: VS Code task / custom hostname
 
-If you use the Live Server extension, right-click `index.html` → “Open with Live Server”.
+This workspace includes a task that opens `http://thepiggame.localhost/` in Chrome.
 
-### Option D: Use `thepiggame.localhost`
+- `*.localhost` often resolves to `127.0.0.1` automatically, but not always.
+- You still need a local web server configured to serve this folder at that hostname.
 
-This workspace includes a VS Code task that opens `http://thepiggame.localhost/` in Chrome.
+## How To Play
 
-Notes:
+UI controls:
 
-- `*.localhost` commonly resolves to `127.0.0.1` in modern environments. If it doesn’t on your machine, add a hosts entry mapping it to localhost.
-- You still need a local server (Apache/Nginx/other) configured to serve this folder at that hostname.
+- **New game**: reset scores/state
+- **Roll dice**: roll 1 or 2 dice depending on mode
+- **Hold**: bank current round points into global score, then switch players
+- **Final score** input: winning target (invalid/blank/< 1 defaults to **100**)
+- **Mode (1 Die / 2 Dice)**: changing mode re-initializes the game to avoid mixing rule sets
 
-## Developer Notes (How the Code Works)
+## Rules
 
-All gameplay logic lives in `js/app.js`.
+### 1 Die (base)
 
-### State Model
+- Players alternate turns.
+- Each roll adds to the player’s **Current** (round) score.
+- Rolling a **1** loses the Current score and ends the turn.
+- **Hold** adds Current → **Global** and ends the turn.
+- First to reach the winning score wins.
 
-The game keeps a small, explicit state:
+### 2 Dice (variation)
 
-- `scores`: global totals `[p0, p1]`
-- `roundScore`: the current turn accumulator
+When **2 Dice** is selected:
+
+- Rolling a **1** on either die loses the Current score and ends the turn.
+- Rolling **double 1s** (“snake eyes”) resets the active player’s **Global** score to 0 and ends the turn.
+
+## Project Layout
+
+```
+.
+├─ index.html         # DOM structure + CDN links
+├─ css/
+│  └─ style.css       # layout + state styling (active/winner)
+├─ js/
+│  └─ app.js          # rules + state + DOM updates
+└─ images/
+   ├─ back.jpg
+   ├─ dice-1.png
+   ├─ dice-2.png
+   └─ ... dice-6.png
+```
+
+External dependencies (via CDN in `index.html`):
+
+- Google Fonts (Lato)
+- Ionicons 2.x
+
+## Developer Guide (Code Tour)
+
+All game logic is in `js/app.js`. The code is intentionally small and DOM-driven.
+
+### Development workflow
+
+- Edit `js/app.js`, `css/style.css`, or `index.html`
+- Refresh the browser (no bundler / no hot reload unless your server provides it)
+- Use DevTools to debug:
+  - Console errors usually indicate a selector mismatch (IDs/classes changed in `index.html`)
+  - Set breakpoints in the Roll/Hold handlers to inspect `scores`, `roundScore`, and `activePlayer`
+
+### State
+
+Top-level state variables:
+
+- `scores`: global totals as `[p0, p1]`
+- `roundScore`: points accumulated this turn
 - `activePlayer`: `0` or `1`
-- `gamePlaying`: disables actions after someone wins
-- `gameVersion`: `'1'` or `'2'` from the `<select class="version">`
+- `gamePlaying`: `true` until a winner is declared
+- `gameVersion`: `'1'` or `'2'` (reads from `<select class="version">`)
+- `dice1`, `dice2`: the latest rolls
 
-### Core Functions
+### DOM contract (what the JS expects)
+
+`app.js` assumes these IDs/classes exist:
+
+- Player panels: `.player-0-panel`, `.player-1-panel`
+- Name labels: `#name-0`, `#name-1`
+- Global scores: `#score-0`, `#score-1`
+- Current scores: `#current-0`, `#current-1`
+- Buttons: `.btn-new`, `.btn-roll`, `.btn-hold`
+- Mode selector: `.version`
+- Winning score input: `.final-score`
+- Dice images: `#dice-1`, `#dice-2`
+
+If you change markup in `index.html`, keep these selectors in sync.
+
+### Key functions
 
 - `initializeGame()`
-  - Resets variables, scores, winner/active classes, and hides dice.
-  - Reads the current mode via `getGameVersion()`.
+  - Resets all state, clears UI, removes winner styling, sets Player 1 active.
+  - Reads mode from `getGameVersion()`.
 - `switchPlayers()`
-  - Toggles `activePlayer`, resets `roundScore`, clears both Current fields, and hides dice.
+  - Toggles `activePlayer`, resets `roundScore`, clears both Current fields, hides dice.
 - `getGameVersion()`
-  - Returns the `<select>` value (`'1'` or `'2'`).
+  - Returns the current `<select class="version">` value (`'1'` or `'2'`).
 
-### Event Flow
+### Event flow
 
-- Mode change (`.version`): re-initializes game.
+- Mode change (`.version`): calls `initializeGame()`.
 - Roll (`.btn-roll`):
-  - Always rolls die 1.
-  - Rolls die 2 only in 2-dice mode.
-  - Updates Current unless a 1 was rolled, in which case it switches players.
-  - Snake eyes (double 1s) sets the active player’s Global score to 0 and switches players.
+  - Always rolls die #1 and updates `#dice-1`.
+  - Rolls die #2 only when `gameVersion === '2'` and updates `#dice-2`.
+  - Snake eyes: if `(dice1 === 1 && dice2 === 1)`, resets the active player’s global score to 0, then switches.
+  - Otherwise: if neither roll is 1, adds `dice1 + dice2` to `roundScore`. If a 1 appears, switches.
 - Hold (`.btn-hold`):
-  - Adds Current to Global.
-  - Reads winning score from `.final-score` (defaults to 100).
-  - Declares winner or switches players.
+  - Adds `roundScore` to the active player’s global total.
+  - Parses `.final-score` via `parseInt`; defaults to `100` if invalid.
+  - Declares winner (sets name to “Winner!”, applies `.winner`, disables play) or switches.
 
-### 1-Die Mode Implementation Detail
+### Implementation details worth knowing
 
-In 1-die mode, the code keeps `dice2` at `0`, so the scoring line `roundScore += dice1 + dice2` effectively adds only die 1.
+- In **1-die** mode, `dice2` remains `0`, so `roundScore += dice1 + dice2` effectively adds only die #1.
+- Dice images are swapped by setting `img.src` to `images/dice-{n}.png`.
+
+## Common Changes
+
+- **Change the default winning score**: update the `winningScore = 100;` branch in the Hold handler (`js/app.js`).
+- **Change the win condition** (e.g., “exactly equals”): adjust the `if (scores[activePlayer] >= winningScore)` check.
+- **Add a rule tweak**: the Roll handler is the single place where “bad rolls” (1 / snake eyes) are applied.
+
+## Troubleshooting
+
+- Dice not visible: dice are intentionally hidden until the first roll (`display: none` until Roll).
+- Fonts/icons missing: they are loaded from CDNs; confirm your network allows `fonts.googleapis.com` and `code.ionicframework.com`.
+- `thepiggame.localhost` doesn’t load: you need a local server mapped to that hostname (and possibly a hosts entry).
 
 ## Deployment
 
-Because this is static, you can deploy it to any static host (GitHub Pages, Netlify, S3, etc.). Make sure the `images/` folder is included.
-
-## Credits
-
-- Game concept: classic “Pig” dice game
-- Icons: Ionicons (CDN)
-- Font: Lato (Google Fonts)
-
-## License
-
-No license specified. Add a license (for example, MIT) if you plan to distribute this publicly.
+Deploy to any static host (GitHub Pages, Netlify, S3, etc.). Ensure `images/` is included and paths remain relative.
